@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Boomerang</string>
+    <string name="title_activity_sign_in">SignInActivity</string>
+
+    <string name="re_enter_password">Re-enter Password.</string>
+    <string name="password_not_match">Password does not match</string>
+    <string name="password_match">Password Confirmed!</string>
+
+    <string name="email_enter">Enter Email address</string>
+    <string name="email_invalid_format">Invalid Email</string>
+    <string name="email_already_exists">Email already exists</string>
+    <string name="email_valid">Valid Email!</string>
+    <string name="email_regex">^[a-zA-Z0-9.-]+@[a-zA-Z0-9.]+[com?net?org?edu?]$</string>
+</resources>
