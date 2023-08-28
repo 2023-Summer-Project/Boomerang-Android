@@ -51,11 +51,12 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.1'  // Reference (Compose-Kotlin Compatibility Map): https://developer.android.com/jetpack/androidx/releases/compose-kotlin
     }
-    packagingOptions {
-        resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
-        }
-    }
+    // Disable for Compose Inspection TODO: Need to be included when the production version is being deployed.
+//    packagingOptions {
+//        resources {
+//            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+//        }
+//    }
 }
 
 dependencies {
@@ -100,11 +101,15 @@ dependencies {
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
+    // Naver Maps API
+    implementation 'com.naver.maps:map-sdk:3.17.0'
 
     // Permission-related library (google Accompanist Jetpack Compose Permissions)
     implementation "com.google.accompanist:accompanist-permissions:0.31.6-rc"
     // System-ui Controller.
     implementation"com.google.accompanist:accompanist-systemuicontroller:0.31.6-rc"
+    // Jetpack DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
     // Resolve Duplicated cLass Error
     constraints {
