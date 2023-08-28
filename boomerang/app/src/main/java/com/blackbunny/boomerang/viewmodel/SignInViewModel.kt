@@ -1,8 +1,12 @@
 package com.blackbunny.boomerang.viewmodel
 
 import android.util.Log
+import android.util.Patterns
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.blackbunny.boomerang.data.EmailValidation
+import com.blackbunny.boomerang.data.SignInUiState
 import com.blackbunny.boomerang.data.authentication.User
 import com.blackbunny.boomerang.domain.authentication.LoginUserToFirebaseImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,11 +29,35 @@ class SignInViewModel @Inject constructor(
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser
 
+    private val _uiState = MutableStateFlow<SignInUiState>(SignInUiState())
+    val uiState: StateFlow<SignInUiState> = _uiState
+
+    fun updateEmailInput(value: TextFieldValue) {
+        _uiState.update {
+            it.copy(
+                inputEmail = value
+            )
+        }
+        validateEmailAddress(value.text)
+    }
+
+    fun updatePasswordInput(value: TextFieldValue) {
+        _uiState.update {
+            it.copy(
+                inputPassword = value
+            )
+        }
+    }
+
     // Firebase Authentication
     fun loginWithEmail(email: String, password: String) {
         // Received User
         var receivedUser: User? = null
-
+        _uiState.update {
+            it.copy(
+                dialogVisibility = true
+            )
+        }
         viewModelScope.launch {
             userLoginUseCase.invoke(email, password)
                 .flowOn(Dispatchers.IO)
@@ -39,14 +67,41 @@ class SignInViewModel @Inject constructor(
                     result.fold(
                         onSuccess = { loggedInUser ->
                             // Internal Access
-                            _currentUser.value = loggedInUser
+                            _uiState.update {
+                                it.copy(
+                                    currentUser = loggedInUser,
+                                    dialogVisibility = false
+                                )
+                            }
                             Log.d("SignInViewModel", "Received User: ${loggedInUser?.uid}")
                         },
                         onFailure = {
-                            // Do nothing
+                            _uiState.update {
+                                it.copy(
+                                    dialogVisibility = false
+                                )
+                            }
                         }
                     )
                 }
+        }
+    }
+
+    fun validateEmailAddress(email: String) {
+        val emailRegex = Regex(Patterns.EMAIL_ADDRESS.pattern())
+        viewModelScope.launch {
+            _uiState.update {
+                if (emailRegex.containsMatchIn(email)) {
+                    it.copy(
+                        isProvidedEmailValid = EmailValidation.VALID
+                    )
+                } else {
+                    it.copy(
+                        isProvidedEmailValid = EmailValidation.INVALID_FORMAT
+                    )
+                }
+            }
+
         }
     }
 }

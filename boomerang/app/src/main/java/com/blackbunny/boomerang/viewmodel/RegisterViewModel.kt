@@ -17,6 +17,7 @@ enum class RegisterScreen {
     LOG_IN, LOGGED_IN
 }
 
+@Deprecated("Deprecated. Use SignInViewModel")
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
     private val userLoginUseCase: LoginUserToFirebaseImpl,

@@ -13,9 +13,12 @@ import com.blackbunny.boomerang.data.authentication.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
@@ -88,6 +91,7 @@ class SignUpViewModel @Inject constructor(
         viewModelScope.launch {
             userRepository.createNewUserWithEmail(email, password)
                 .flowOn(Dispatchers.IO)
+                .cancellable()
                 .map { Result.success(it) }
                 .catch { emit(Result.failure(it)) }
                 .collectLatest { result ->
@@ -114,7 +118,7 @@ class SignUpViewModel @Inject constructor(
         return channel
     }
 
-    fun requestEmailVerification(onSuccess: (EmailVerification) -> Unit) {
+    fun requestEmailVerification() {
         _uiState.update {
             it.copy(
                 isEmailVerified = EmailVerification.VERIFYING
@@ -122,8 +126,9 @@ class SignUpViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            userRepository.requestEmailVerification()
+            val job = userRepository.requestEmailVerification()
                 .flowOn(Dispatchers.IO)
+                .cancellable()
                 .map { Result.success(it) }
                 .catch { emit(Result.failure(it)) }
                 .collect {  result ->
@@ -139,10 +144,6 @@ class SignUpViewModel @Inject constructor(
                                     it.copy(
                                         isEmailVerified = isVerified
                                     )
-                                }
-                            }.also {
-                                onSuccess(isVerified).also {
-                                    Log.d(TAG, "Verification: $isVerified")
                                 }
                             }
                         },
@@ -196,5 +197,18 @@ class SignUpViewModel @Inject constructor(
         coroutineScope.launch(Dispatchers.Default) {
             operation()
         }
+    }
+
+    // Cancel Job on current viewModelScope
+    fun cancelCurrentJob() {
+        // Clear the Dialog visibility: Reason --> Dialog is related to time-consuming work executed
+        // under CoroutineScope.
+        _uiState.update {
+            it.copy(
+                dialogVisibility = false
+            )
+        }
+        viewModelScope.coroutineContext.cancelChildren()
+        userRepository.cancelCurrentJob()
     }
 }

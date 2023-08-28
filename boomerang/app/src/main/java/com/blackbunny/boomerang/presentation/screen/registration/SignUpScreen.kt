@@ -1,4 +1,4 @@
-package com.blackbunny.boomerang.presentation.screen
+package com.blackbunny.boomerang.presentation.screen.registration
 
 import android.util.Log
 import android.widget.Toast
@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,7 +38,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.blackbunny.boomerang.data.EmailVerification
 import com.blackbunny.boomerang.data.MainAppStatus
 import com.blackbunny.boomerang.data.PasswordValidation
@@ -48,6 +51,7 @@ import com.blackbunny.boomerang.presentation.component.CircularProgressDialog
 import com.blackbunny.boomerang.presentation.component.NonSensitiveTextField
 import com.blackbunny.boomerang.presentation.component.SensitiveTextField
 import com.blackbunny.boomerang.presentation.component.TitleText
+import com.blackbunny.boomerang.presentation.screen.MainServiceStatus
 import com.blackbunny.boomerang.viewmodel.SignUpViewModel
 import kotlinx.coroutines.launch
 
@@ -68,35 +72,39 @@ fun SignUpScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    // Handle Navigation
+    if (uiState.isEmailVerified == EmailVerification.VERIFIED) {
+        LaunchedEffect(Unit) {
+            navController.navigate(MainServiceStatus.MAIN.name) {
+                // Clear out current backstack entry before moving on to different NavGraph
+                Log.d("NAVIGATOR", "Start Destination: ${navController.graph.findStartDestination()}")
+                Log.d("NAVIGATOR", "Start Destination: ${navController.currentBackStack.value.toString()}")
+
+                popUpTo(navController.graph.id) {
+                    inclusive = true
+                    saveState = true
+                }
+                restoreState = true
+            }
+        }
+    }
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         SignUpForm(
             uiState = uiState,
-            onCancelButtonClicked = { navController.popBackStack(MainAppStatus.INITIAL.name, false) },
+            onCancelButtonClicked = {
+                viewModel.cancelCurrentJob()
+                navController.popBackStack(MainAppStatus.INITIAL.name, false) },
             onSignUpButtonClicked = { email, password ->
                 // SignUp request.
                 localCoroutineScope.launch {
                     val signUpResult = viewModel.createNewUser(email, password)
                     if (signUpResult.receive()) {
                         // User creation successful -> request email verification.
-                        viewModel.requestEmailVerification {
-                            when (it) {
-                                EmailVerification.NOT_VERIFIED -> {
-                                    Log.d("SignInScreen", "Email not verified.")
-                                }
-
-                                EmailVerification.VERIFYING -> {
-                                    Log.d("SignInScreen", "Email is verifying")
-                                }
-
-                                EmailVerification.VERIFIED -> {
-                                    Log.d("SignInScreen", "Email is verified.")
-                                    navController.navigate(MainAppStatus.AUTHENTICATED.name)
-                                }
-                            }
-                        }
+                        viewModel.requestEmailVerification()
                     } else {
                         Log.d("SignUpScreen", "User creation was not successful.")
                     }
@@ -114,7 +122,11 @@ fun SignUpScreen(
                 titleText = "Email Verification",
                 contentText = "Please check your mailbox"
             ) {
-                /* DO NOTHING */
+                ButtonOutlined(
+                    buttonText = "Cancel"
+                ) {
+                    viewModel.cancelCurrentJob()
+                }
             }
         }
     }
@@ -218,6 +230,7 @@ fun SignUpForm(
                     .fillMaxWidth()
             ) {
                 ButtonOutlined(
+//                    enabled = !uiState.dialogVisibility,
                     enabled = !uiState.dialogVisibility,
                     buttonText = "Cancel"
                 ) {
@@ -252,13 +265,7 @@ fun SignUpForm(
 @Composable
 @Preview
 fun SignUpScreenPreview() {
-//    Surface(
-//        Modifier
-//            .fillMaxSize()
-//            .background(Color.White))
-//    {
-//        SignUpForm(onCancelButtonClicked = {  }) { result ->
-//
-//        }
-//    }
+    val temp = rememberNavController()
+
+    SignUpScreen(navController = temp)
 }

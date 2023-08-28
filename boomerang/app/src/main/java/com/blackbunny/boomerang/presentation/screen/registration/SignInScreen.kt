@@ -1,4 +1,4 @@
-package com.blackbunny.boomerang.presentation.screen
+package com.blackbunny.boomerang.presentation.screen.registration
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
@@ -21,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.SnackbarDuration
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -37,17 +39,19 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.blackbunny.boomerang.data.EmailValidation
 import com.blackbunny.boomerang.data.MainAppStatus
+import com.blackbunny.boomerang.data.SignInUiState
 import com.blackbunny.boomerang.presentation.component.ButtonOutlined
 import com.blackbunny.boomerang.presentation.component.ButtonSolid
 import com.blackbunny.boomerang.presentation.component.CircularProgressDialog
 import com.blackbunny.boomerang.presentation.component.NonSensitiveTextField
 import com.blackbunny.boomerang.presentation.component.SensitiveTextField
 import com.blackbunny.boomerang.presentation.component.TitleText
-import com.blackbunny.boomerang.viewmodel.RegisterViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.blackbunny.boomerang.presentation.screen.MainServiceStatus
+import com.blackbunny.boomerang.viewmodel.SignInViewModel
 
 /**
  * SignIn Screens
@@ -56,7 +60,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SignInScreen(
-    viewModel: RegisterViewModel = hiltViewModel(),
+    viewModel: SignInViewModel = hiltViewModel(),
     modifier: Modifier = Modifier,
     navController: NavHostController,
     showSnackbar: (String, SnackbarDuration) -> Unit
@@ -68,39 +72,66 @@ fun SignInScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+
+    // Handle Navigation with LaunchedEffect
+    // Prevent multiple navigate call during composition & recomposition during navigation.
+    Log.d("RegisterScreen", "Current User: ${uiState.currentUser?.email}")
+    if (uiState.currentUser != null) {
+        dialogVisible.value = false
+
+        LaunchedEffect(Unit) {
+            navController.navigate(MainServiceStatus.MAIN.name) {
+
+                // Clear out current backstack entry before moving on to different NavGraph
+                Log.d("NAVIGATOR", "Start Destination: ${navController.graph.findStartDestination().route}")
+                Log.d("NAVIGATOR", "Start Destination: ${navController.currentBackStack.value.toString()}")
+
+                popUpTo(navController.graph.id) {
+                    inclusive = true
+                    saveState = true
+                }
+                restoreState = true
+            }
+        }
+    } else {
+        dialogVisible.value = false
+    }
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         SignInForm(
+            uiState = uiState,
+            onEmailValueChanged = {
+                viewModel.updateEmailInput(it)
+            },
+            onPasswordValueChanged = {
+                viewModel.updatePasswordInput(it)
+            },
             onCancelButtonClicked = { navController.popBackStack(MainAppStatus.INITIAL.name, false) },
             onSignInButtonClicked = { email, password ->
-                coroutineScope.launch {
-                    viewModel.loginWithEmail(email, password)
-                    dialogVisible.value = true
+                when (uiState.isProvidedEmailValid) {
+                    EmailValidation.VALID -> {
+                        viewModel.loginWithEmail(email, password)
+                        dialogVisible.value = true
+                    }
+                    EmailValidation.INVALID_FORMAT -> {
+                        showSnackbar("Please check an email format.", SnackbarDuration.Short)
+                    }
+                    else -> {
+                        showSnackbar("Please provide an email and password", SnackbarDuration.Short)
+                    }
                 }
+
             }
         )
         AnimatedVisibility(
-            visible = dialogVisible.value,
+            visible = uiState.dialogVisibility,
             enter = scaleIn(),
             exit = scaleOut()
         ) {
-            CircularProgressDialog() {
-                // Should be modified later.
-                coroutineScope.launch {
-                    delay(1500L)
-
-                    Log.d("RegisterScreen", "Current User: ${uiState.currentUser?.email}")
-                    if (uiState.currentUser != null) {
-                        dialogVisible.value = false
-                        navController.navigate(MainAppStatus.AUTHENTICATED.name)
-                    } else {
-                        dialogVisible.value = false
-                        showSnackbar("Log in failed", SnackbarDuration.Short)
-                    }
-                }
-            }
+            CircularProgressDialog() { /* Do nothing */ }
         }
     }
 }
@@ -109,6 +140,9 @@ fun SignInScreen(
 @Composable
 fun SignInForm(
     modifier: Modifier = Modifier,
+    uiState: SignInUiState,
+    onEmailValueChanged: (TextFieldValue) -> Unit,
+    onPasswordValueChanged: (TextFieldValue) -> Unit,
     onCancelButtonClicked: () -> Unit,
     onSignInButtonClicked: (String, String) -> Unit
 ) {
@@ -142,24 +176,27 @@ fun SignInForm(
             Spacer(Modifier.height(80.dp))
 
             NonSensitiveTextField(
+                enabled = !uiState.dialogVisibility,
                 title = "Email",
-                supportingText = "Enter Valid Email",
-                value = userInputEmail.value,
+                supportingText = stringResource(uiState.isProvidedEmailValid.text),
+                value = uiState.inputEmail,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Email),
                 keyboardActions = KeyboardActions(onDone = { localFocusManage.clearFocus() }),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 50.dp, end = 50.dp)
             ) {
-                userInputEmail.value = it
+//                userInputEmail.value = it
+                onEmailValueChanged(it)
             }
 
             // Spacer
             Spacer(Modifier.height(15.dp))
 
             SensitiveTextField(
+                enabled = !uiState.dialogVisibility,
                 title = "Password",
-                value = userInputPassword.value,
+                value = uiState.inputPassword,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Password),
                 keyboardActions = KeyboardActions(onDone = { localFocusManage.clearFocus() }),
@@ -167,7 +204,8 @@ fun SignInForm(
                     .fillMaxWidth()
                     .padding(start = 50.dp, end = 50.dp)
             ) {
-                userInputPassword.value = it
+//                userInputPassword.value = it
+                onPasswordValueChanged(it)
             }
 
             Spacer(Modifier.height(30.dp))
@@ -180,16 +218,18 @@ fun SignInForm(
                     .fillMaxWidth()
             ) {
                 ButtonOutlined(
+                    enabled = !uiState.dialogVisibility,
                     buttonText = "Cancel"
                 ) {
                     onCancelButtonClicked()
                 }
                 ButtonSolid(
+                    enabled = !uiState.dialogVisibility,
                     buttonText = "Sign In"
                 ) {
                     onSignInButtonClicked(
-                        userInputEmail.value.text,
-                        userInputPassword.value.text
+                        uiState.inputEmail.text,
+                        uiState.inputPassword.text
                     )
                 }
             }
@@ -205,9 +245,12 @@ fun ScreenPreview() {
         Modifier.fillMaxSize()
     ) {
         SignInForm(
+            uiState = SignInUiState(),
             modifier = Modifier,
+            onEmailValueChanged = {  },
+            onPasswordValueChanged = {  },
             onCancelButtonClicked = {/* TODO: Cancel logics */},
-            { email, pw -> }
+            onSignInButtonClicked = { email, pw -> }
         )
     }
 }
