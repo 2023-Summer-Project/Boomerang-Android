@@ -12,6 +12,8 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        
+
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
     }
