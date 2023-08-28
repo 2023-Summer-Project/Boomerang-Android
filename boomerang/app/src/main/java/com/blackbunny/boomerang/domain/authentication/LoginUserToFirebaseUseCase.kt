@@ -15,3 +15,7 @@ interface LoginUserToFirebaseUseCase {
     // Login via Twitter
 
 }
+
+interface ValidateEmailUseCase {
+    fun emailValidation(email: String, onSuccess: (Result<Boolean>) -> Unit)
+}
