@@ -141,7 +141,6 @@ class MessageRemoteSource @Inject constructor() {
                     Log.d(TAG, error.message)
                     Log.d(TAG, error.details)
                 }
-
             })
         awaitClose {/* Do nothing. */ }
     }
@@ -181,6 +180,30 @@ class MessageRemoteSource @Inject constructor() {
      * @TODO: Should be refactored later in a better way. (add Sender / Receiver fields on Chat node.)
      */
     fun removeChatroom(chatId: String) {
+        val senderId = Firebase.auth.currentUser!!.uid
+        val receiverId = with(chatId.split("_")) {
+            if (this[0] == senderId) this[1]
+            else this[0]
+        }
+
+        val childrenUpdates = mapOf(
+            "/chat/${chatId}" to null,
+            "/messages/${chatId}" to null,
+            "user/${senderId}/chat_list/${chatId}/" to null,
+            "user/${receiverId}/chat_list/${chatId}/" to null
+        )
+
+        ref.getReference().updateChildren(childrenUpdates)
+            .addOnSuccessListener {
+                Log.d(TAG, "Successfully remove given chatroom")
+            }
+            .addOnFailureListener { exception ->
+                Log.d(TAG, "Unable to remove given chatroom")
+                exception.printStackTrace()
+            }
+
+
+        /*
         Firebase.firestore.collection("Product")
             .document(chatId.split("_")[1]).get(Source.DEFAULT)
             .addOnSuccessListener {
@@ -203,11 +226,13 @@ class MessageRemoteSource @Inject constructor() {
                         Log.d(TAG, "Unable to remove given chatroom")
                         exception.printStackTrace()
                     }
+
             }
             .addOnFailureListener {
                 Log.d(TAG, "Unable retrieve receiver ID, therefore, chatroom removal request has been canceled")
                 it.printStackTrace()
             }
+         */
     }
 
     /**
@@ -223,9 +248,11 @@ class MessageRemoteSource @Inject constructor() {
      */
     suspend fun postNewChatroom_Test(product: Product) = suspendCoroutine<Pair<String, Boolean>> { continuation ->
         val senderId = Firebase.auth.currentUser!!.uid
+        val receiverId = product.ownerId
 
         // Chatroom ID: SENDER-ID_PRODUCT-ID
-        val chatroomId = "${senderId}_${product.productId}"
+        // Scheme has been changed: SENDER-ID_RECEIVER-ID_PRODUCT_ID
+        val chatroomId = "${senderId}_${receiverId}_${product.productId}"
 
         // 1. Check whether the current user already has a same chatroom.
         val currentSenderChatroom = ref.getReference("user").child(senderId).child("chat_list")
