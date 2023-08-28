@@ -21,5 +21,25 @@ enum class EmailVerification {
 }
 
 enum class MainAppStatus {
-    LOG_IN, LOGGED_IN, INITIAL, SIGN_IN, SIGN_UP, AUTHENTICATED, ERROR, NOT_VERIFIED
+    STARTUP, INITIAL, SIGN_IN, SIGN_UP, AUTHENTICATED, ERROR, NOT_VERIFIED, REGISTRATION
+}
+
+enum class SignOutRequest(@StringRes val text: Int) {
+    YET_REQUESTED(text = R.string.sign_out_yet_requested),
+    REQUESTING(text = R.string.sign_out_requested),
+    SUCCESS(text = R.string.sign_out_success),
+    FAILED(text = R.string.sign_out_failed)
+}
+
+enum class DataFetchRequest {
+    READY, REQUESTED, COMPLETED
+}
+
+enum class TransactionStatus(@StringRes val text: Int) {
+    YET_INITIALIZED(text = R.string.transaction_yet_initialized),
+    REQUESTED(text = R.string.transaction_requested),
+    ACCEPTED(text = R.string.transaction_accepted),
+    REJECTED(text = R.string.transaction_rejected),
+    NOT_RETURNED(text = R.string.transaction_not_returned),
+    COMPLETED(text = R.string.transaction_completed)
 }
