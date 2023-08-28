@@ -1,37 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Boomerang</string>
-    <string name="title_activity_sign_in" translatable="false">SignInActivity</string>
-
-    <string name="re_enter_password">Re-enter Password.</string>
+    <string name="re_enter_password">Re-enter password.</string>
     <string name="password_not_match">Password does not match</string>
     <string name="password_match">Password Confirmed!</string>
-
     <string name="email_enter">Enter Email address</string>
     <string name="email_invalid_format">Invalid Email</string>
     <string name="email_already_exists">Email already exists</string>
     <string name="email_valid">Valid Email!</string>
-    <string name="email_regex" translatable="false">^[a-zA-Z0-9.-]+@[a-zA-Z0-9.]+[com?net?org?edu?]$</string>
-
-    <string name="sign_out_yet_requested" translatable="false">Sign out yet requested</string>
     <string name="sign_out_requested">Signing out</string>
-    <string name="sign_out_success">Successfully signed out</string>
+    <string name="sign_out_success">Successfully signed out.</string>
     <string name="sign_out_failed">Sign out failed</string>
-
+    <string name="currency_krw">Won</string>
     <string name="product_owner">Owner</string>
     <string name="product_name">Product Name</string>
     <string name="product_type">Product Type</string>
-
-    <!-- Extras -->
-    <string name="currency_krw">Won</string>
     <string name="daytime_format">MMM dd, yyyy, hh.mm a</string>
     <string name="text_price">price</string>
     <string name="text_location">Location</string>
-    <string name="button_text_add_photo">Add photo</string>
+    <string name="button_text_add_photo">Add Photo</string>
     <string name="product_text_description">Description</string>
     <string name="product_text_title">Title</string>
     <string name="title_text_add_product">Add new product</string>
-    <string name="camera_guide_info">Place object inside of the red square.</string>
-    <string name="bottom_nav_home">home</string>
+    <string name="camera_guide_info">Place object inside of the read square.</string>
+    <string name="bottom_nav_home">Home</string>
     <string name="bottom_nav_search">Search</string>
     <string name="bottom_nav_my">My</string>
     <string name="bottom_nav_message">Message</string>
@@ -39,12 +31,12 @@
     <string name="text_review_product">Do you want to review the product?</string>
     <string name="text_button_review_product">Review this product ></string>
     <string name="text_field_hint_from">from</string>
-    <string name="text_field_hint_until">Until</string>
+    <string name="text_field_hint_until">until</string>
     <string name="day_format">MMM dd, yyyy</string>
     <string name="btn_text_cancel">cancel</string>
     <string name="btn_text_confirm">confirm</string>
     <string name="text_req_rent">Request Rent</string>
-    <string name="transaction_yet_initialized">Transaction is not yet initialized.</string>
+    <string name="transaction_yet_initialized">Transaction is not yet initialized</string>
     <string name="transaction_requested">Transaction has been requested</string>
     <string name="transaction_accepted">Transaction has been accepted</string>
     <string name="transaction_rejected">transaction has been rejected.</string>
