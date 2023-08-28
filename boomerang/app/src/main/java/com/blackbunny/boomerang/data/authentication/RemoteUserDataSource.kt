@@ -6,16 +6,23 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.Source
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class RemoteUserDataSource @Inject constructor() {
     private val TAG = "RemoteUserDataSource"
     private val auth = Firebase.auth
+
+    // Common CoroutineScope
+    private val ioCoroutineScope = CoroutineScope(Dispatchers.IO)
 
     fun loginViaEmailAndPasswordTest(email: String, password: String): Flow<FirebaseUser?> = callbackFlow {
         val signInListener = OnCompleteListener<AuthResult> { task ->
@@ -24,6 +31,7 @@ class RemoteUserDataSource @Inject constructor() {
                 trySend(auth.currentUser)
             } else {
                 // Login Fails
+                Log.d(TAG, task.exception!!.message!!)
                 trySend(null)
             }
         }
@@ -82,10 +90,11 @@ class RemoteUserDataSource @Inject constructor() {
             cookiedUser.sendEmailVerification()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        CoroutineScope(Dispatchers.IO).launch {
+                        ioCoroutineScope.launch {
                             // 3 minute timeouts.
                             try {
-                                withTimeout(180000) {
+                                // 180000
+                                withTimeout(180000L) {
                                     while (true) {
                                         cookiedUser.reload()
                                         Log.d(TAG, "${cookiedUser.isEmailVerified}")
@@ -103,6 +112,9 @@ class RemoteUserDataSource @Inject constructor() {
                                 Log.d(TAG, "Email verification request timeout.")
                                 removeUserFromDatabase()
                                 trySend(EmailVerification.NOT_VERIFIED)
+                            } catch (e: CancellationException) {
+                                Log.d(TAG, "Current job was cancelled by user successfully.")
+                                removeUserFromDatabase()
                             }
                         }
                     } else {
@@ -120,6 +132,33 @@ class RemoteUserDataSource @Inject constructor() {
         return Firebase.auth.currentUser
     }
 
+    suspend fun fetchSessionUser() = suspendCoroutine { continuation ->
+        val currentUser = Firebase.auth.currentUser
+
+        if (currentUser != null) {
+            // Request user information to Firebase Firestore database (User Table)
+            Firebase.firestore.collection("User").document(currentUser.uid)
+                .get(Source.DEFAULT)
+                .addOnSuccessListener { documentSnapshot ->
+                    Log.d(TAG, "Successfully receive user information from the database.")
+                    continuation.resume(documentSnapshot)
+                }
+                .addOnFailureListener {
+                    Log.d(TAG, "Unable to receive user information from the database.")
+                    it.printStackTrace()
+
+                    continuation.resume(null)
+                }
+        }
+    }
+
+    fun signOutFromFirebase(): Boolean {
+        // Sign out current user and clear out a related disk cache.
+        auth.signOut().run {
+            return auth.currentUser == null
+        }
+    }
+
     // User modification - Delete User from the database.
     fun removeUserFromDatabase() {
         Firebase.auth.currentUser?.delete()?.addOnCompleteListener { task ->
@@ -129,6 +168,12 @@ class RemoteUserDataSource @Inject constructor() {
                 Log.d(TAG, "Failed to remove user from the database.\nReason: ${task.exception?.message}")
             }
         }
+    }
+
+    fun cancelCurrentJob() {
+        ioCoroutineScope.coroutineContext.cancelChildren(
+            CancellationException("User cancel the current ongoing jobs.")
+        )
     }
 
     /*
