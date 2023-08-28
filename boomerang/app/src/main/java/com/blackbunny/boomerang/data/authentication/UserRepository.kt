@@ -3,6 +3,8 @@ package com.blackbunny.boomerang.data.authentication
 import android.util.Log
 import com.blackbunny.boomerang.data.EmailVerification
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -60,11 +62,53 @@ class UserRepository @Inject constructor(
         }
     }
 
+    suspend fun fetchSessionUser(): Result<User> {
+        remoteSource.fetchSessionUser()
+            .also { snapshot ->
+                if (snapshot != null) {
+                    // User found.
+                    val data = snapshot.data
+                    if (data != null) {
+                        return Result.success(
+                            User(
+                                email = data["EMAIL"] as String,
+                                uid = data["UID"] as String,
+                                isEmailVerified = true,
+                                userName = data["USERNAME"] as String,
+                                profileImage = data["PROFILE_IMAGE"] as String
+                            )
+                        )
+                    } else {
+                        return Result.failure(Exception("Unable to find the data under document."))
+                    }
+                } else {
+                    return Result.failure(Exception("No such user under the collection User."))
+                }
+            }
+    }
+
+    fun requestLogout(): Boolean {
+        val channel = Channel<Boolean>()
+        val result = remoteSource.signOutFromFirebase()
+
+//        channel.send(result)
+//
+//        Log.d("UserRepository", "Size of channel $channel")
+
+        return result
+    }
+
+    fun cancelCurrentJob() {
+        remoteSource.cancelCurrentJob()
+    }
+
 }
 
 data class User(
     val email: String = "",
     val password: String = "",
     val uid: String = "",
-    val isEmailVerified: Boolean
+    val isEmailVerified: Boolean = false,
+    val userName: String = "",
+    val profileImage: String = ""
 )
