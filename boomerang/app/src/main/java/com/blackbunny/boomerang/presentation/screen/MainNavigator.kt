@@ -27,6 +27,7 @@ import com.blackbunny.boomerang.presentation.screen.main.MyProductScreen
 import com.blackbunny.boomerang.presentation.screen.main.MyTransactionScreen
 import com.blackbunny.boomerang.presentation.screen.main.ProductRegistrationScreen
 import com.blackbunny.boomerang.presentation.screen.main.ProfileServiceScreen
+import com.blackbunny.boomerang.presentation.screen.main.SearchScreen
 import com.blackbunny.boomerang.presentation.screen.registration.SignInScreen
 import com.blackbunny.boomerang.presentation.screen.registration.SignUpScreen
 import com.blackbunny.boomerang.viewmodel.ChatroomViewModel
@@ -133,10 +134,7 @@ fun MainNavigator(
             composable(MainServiceStatus.SEARCH.name) {
                 appBarStatus.value = true
 
-                Surface(Modifier.fillMaxSize()) {
-                    appBarStatus.value = true
-                    Text("SEARCH")
-                }
+                SearchScreen()
             }
 
             composable(MainServiceStatus.MY.name) {
