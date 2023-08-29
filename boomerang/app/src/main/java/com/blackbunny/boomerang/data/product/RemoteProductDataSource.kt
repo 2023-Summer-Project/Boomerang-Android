@@ -2,8 +2,6 @@ package com.blackbunny.boomerang.data.product
 
 import android.net.Uri
 import android.util.Log
-import androidx.compose.ui.res.stringResource
-import com.blackbunny.boomerang.R
 import com.blackbunny.boomerang.domain.product.Product
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.ktx.auth
@@ -11,26 +9,15 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.Source
 import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.model.Document
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import com.google.firebase.storage.ktx.storageMetadata
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.io.File
-import java.io.FileInputStream
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.coroutines.resume
@@ -40,14 +27,14 @@ import kotlin.coroutines.suspendCoroutine
 class RemoteProductDataSource @Inject constructor() {
     private val TAG = "RemoteProductDataSource"
     // Firestore access.
-    private val db = Firebase.firestore
+    private val ref = Firebase.firestore
     private val imageStorage = Firebase.storage.reference
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
     fun getAllProduct() = callbackFlow<QueryDocumentSnapshot> {
         Log.d(TAG, "getAllProduct Called")
-        db.collection("Product")
+        ref.collection("Product")
             .orderBy("TIMESTAMP", Query.Direction.DESCENDING)
             .get(Source.DEFAULT)
             .addOnSuccessListener { result ->
@@ -71,7 +58,7 @@ class RemoteProductDataSource @Inject constructor() {
      */
     suspend fun fetchSingleProduct(productId: String) = suspendCoroutine { continuation ->
         Log.d(TAG, "fetchSingleProduct called.")
-        db.collection("Product").document(productId)
+        ref.collection("Product").document(productId)
             .get(Source.DEFAULT)
             .addOnSuccessListener { result ->
                 continuation.resume(result)
@@ -90,7 +77,7 @@ class RemoteProductDataSource @Inject constructor() {
      */
     fun fetchProducts(userId: String) = callbackFlow {
         Log.d(TAG, "Fetch product owned by $userId")
-        db.collection("Product")
+        ref.collection("Product")
             .whereEqualTo("OWNER_ID", userId)
 //            .orderBy("TIMESTAMP", Query.Direction.DESCENDING)
             .get(Source.DEFAULT)
@@ -140,7 +127,7 @@ class RemoteProductDataSource @Inject constructor() {
 
 
         // Add new record on "Product" collection using set() function.
-        db.collection("Product")
+        ref.collection("Product")
             .document(UUID.randomUUID().toString())
             .set(temp)
             .addOnSuccessListener {
@@ -153,22 +140,6 @@ class RemoteProductDataSource @Inject constructor() {
                 continuation.resume(Result.success(false))      // Need to ne validate whether it is proper way to handle this.
             }
     }
-
-    /*
-    data class Product(
-        val coverImage: String = "",
-        val images: Map<String, String> = emptyMap(),
-        val title: String = "",
-        val content: String = "",
-        val productName: String = "",
-        val productType: String = "",
-        val location: String = "",
-        val price: String = "",
-        val ownerId: String = "",
-        val availability: Boolean = false
-    )
-     */
-
 
     // Implement Promise-like pattern.
     suspend fun uploadNewImage(file: File): Pair<String, String>? = suspendCoroutine { continuation ->
@@ -206,23 +177,32 @@ class RemoteProductDataSource @Inject constructor() {
             }.await()
     }
 
+    /**
+     * searchProduct Function
+     * @limit: Currently only targeted to name of the post.
+     * TODO: Find alternative way to support advanced search feature.
+     */
+
+    fun searchProductByKeyword(keyword: String) = callbackFlow {
+        ref.collection("Product")
+            .whereGreaterThanOrEqualTo("POST_TITLE", keyword)
+            // "\uf8ff" is at an extremely high boundary, therefore, any unicode character with this keyword would greater than any other
+            // unicode based text.
+            .whereLessThanOrEqualTo("POST_TITLE", keyword + "\uf8ff")
+            .get(Source.DEFAULT)
+            .addOnSuccessListener {
+                // Successfully received data.
+                for (document in it.documents) {
+                    trySend(document)
+                }
+            }
+            .addOnFailureListener {
+                // failed to receive data.
+                Log.d(TAG, "Unable to fetch the data")
+                it.printStackTrace()
+            }
+
+        awaitClose { /* currently do nothing. */ }
+    }
+
 }
-
-
-/*
-REFERENCE
-
-    val day = "2023년 8월 19일"
-    val time = "PM 10시 16분"
-
-    val temp = "$day $time"
-    println(temp)
-
-    val date = SimpleDateFormat("yyyy년 MM월 dd일 a hh시 mm분").parse(temp)
-
-    println(date.time)
-
-    println()
-    println(SimpleDateFormat("yyyy년 MM월 dd일 a hh시 mm분").format(date.time))
-
- */

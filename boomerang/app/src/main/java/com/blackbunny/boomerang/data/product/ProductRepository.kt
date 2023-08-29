@@ -3,16 +3,15 @@ package com.blackbunny.boomerang.data.product
 import android.net.Uri
 import android.util.Log
 import com.blackbunny.boomerang.domain.product.Product
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QueryDocumentSnapshot
+import com.naver.maps.geometry.LatLng
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
 import java.io.File
 import javax.inject.Inject
 
@@ -57,5 +56,39 @@ class ProductRepository @Inject constructor(
     }
 
 
+    /**
+     * searchProductByKeyword
+     * @param keyword String type keyword for product search.
+     * TODO: 1. Process of converting raw data (DocumentSnapshot) 2. Refactor Remote source to fetch only required data.
+     */
+    fun searchProductByKeyword(keyword: String) = remoteSource.searchProductByKeyword(keyword)
+        .map { documentSnapshot ->
+            documentSnapshot.getObject()
+        }
 
+    private fun DocumentSnapshot.getObject(): Product {
+
+        val imagesMap = this["IMAGES_MAP"] as Map<String, String>
+
+        return Product(
+            productId = this.id as String,
+            coverImage = imagesMap[imagesMap.keys.sorted().first()] as String,
+            images = imagesMap,
+            title = this["POST_TITLE"] as String,
+            content = this["POST_CONTENT"] as String,
+            productName = this["PRODUCT_NAME"] as String,
+            location = this["LOCATION"] as String,
+            locationLatLng = LatLng(
+                (this["LATITUDE"]).toString().toDouble(),
+                (this["LONGITUDE"]).toString().toDouble()
+            ) ?: null,
+            price = this["PRICE"].toString(),
+            ownerId = this["OWNER_ID"] as String,
+            ownerName = this["OWNER_NAME"] as String,
+            profileImage = this["PROFILE_IMAGE"] as String,
+            availability = this["AVAILABILITY"] as Boolean,
+            timestamp = this["TIMESTAMP"] as Timestamp,
+            availableTime = this["AVAILABLE_TIME"] as List<String>
+        )
+    }
 }
