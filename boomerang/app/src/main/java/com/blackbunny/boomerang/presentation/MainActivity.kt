@@ -99,7 +99,6 @@ class MainActivity : ComponentActivity() {
                                         }
                                     ),
                                     fabDetails = Pair(Icons.Filled.Add) {
-//                                        appState.showSnackbar("Not yet supported", SnackbarDuration.Short
                                         appState.navController.navigate(MainServiceStatus.PRODUCT_REGISTRATION.name)
                                     }
                                 )
@@ -141,58 +140,10 @@ class MainActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "Lifecycle: onDestroy Called")
+
+        /* Here, where all the resources in used should be freed for preventing potential memory leak */
+
         viewModelStore.clear()      // Clear all viewModels for preventing potential memory leak.
         this.externalCacheDir?.delete()      // Clear out the current cache memory for maintaining minimal app size.
     }
 }
-
-@Composable
-fun SignedIn(
-    sessionViewModel: MainViewModel = viewModel()
-) {
-    val user by sessionViewModel.sessionUser.collectAsState()
-
-    Text("Signed in with ${user?.email}")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    Beacon_Detection_AndroidTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colors.background
-        ) {
-//            InitialPage()
-        }
-    }
-}
-
-
-/*
-NavHost(
-                        navController = appState.navController,
-                        startDestination = MainAppStatus.LOG_IN.name,
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-
-                        composable(MainAppStatus.LOG_IN.name) {
-
-                        }
-
-                    }
-
-
-
-                    when(appScreenState) {
-                        MainAppStatus.LOGGED_IN -> {
-                            SignedIn()
-                        }
-                        else -> {
-                            RegisterScreen(
-                                modifier = Modifier.padding(innerPadding),
-                                navController = appState.navController
-                            )
-                        }
-                    }
- */
