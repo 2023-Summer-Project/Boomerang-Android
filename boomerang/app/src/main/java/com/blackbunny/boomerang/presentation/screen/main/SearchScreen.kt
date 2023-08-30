@@ -3,7 +3,6 @@ package com.blackbunny.boomerang.presentation.screen.main
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -15,13 +14,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,8 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,9 +47,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.blackbunny.boomerang.R
 import com.blackbunny.boomerang.viewmodel.SearchViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import java.text.SimpleDateFormat
 
 /**
@@ -72,6 +66,19 @@ fun SearchScreen(
     // TODO: Thank how to implement search feature.
 
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        // Handle search request to the Firestore server.
+        snapshotFlow { uiState.searchKeyword }
+            .debounce(500L)
+            .distinctUntilChanged()
+            .filter { it.text.isNotBlank() }
+            .collectLatest {
+                Log.d("SearchScreen", "SEARCH WOULD BE INITIATED FOR KEYWORD ${it.text}")
+                viewModel.searchProductByKeyword()
+            }
+    }
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -89,7 +96,6 @@ fun SearchScreen(
             OutlinedTextField(
                 value = uiState.searchKeyword,
                 onValueChange = {
-                    Log.i("SearchScreen", "OnValueChanged")
                     viewModel.updateSearchKeyword(it)
                 },
                 modifier = Modifier
@@ -191,9 +197,6 @@ fun SearchScreen(
             }
         }
     }
-
-
-
 }
 
 @Preview

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -40,25 +41,12 @@ class SearchViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
 
-
     fun updateSearchKeyword(newValue: TextFieldValue) {
-        viewModelScope.launch {
-            launch {
-                _uiState.update {
-                    it.copy(
-                        searchKeyword = newValue
-                    )
-                }
-            }
-
-            launch {
-                if (_uiState.value.searchKeyword.text.isNotBlank()) {
-                    delay(500)
-                    searchProductByKeywordContinuous()
-                }
-            }
+        _uiState.update {
+            it.copy(
+                searchKeyword = newValue
+            )
         }
-
     }
 
 
