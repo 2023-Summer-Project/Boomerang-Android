@@ -2,7 +2,6 @@ package com.blackbunny.boomerang.presentation.component
 
 import android.content.Context
 import android.os.Bundle
-import android.text.format.Time
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -62,7 +61,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerColors
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -92,6 +90,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -163,6 +162,37 @@ fun subTitleText(
         textAlign = TextAlign.Center,
         fontSize = 16.sp,
         color = MaterialTheme.colorScheme.secondary
+    )
+}
+
+@Composable
+fun AutoSizedText(
+    modifier: Modifier = Modifier,
+    text: String,
+    fontWeight: FontWeight = FontWeight.Normal,
+    fontSize: Int = 12,
+    textAlign: TextAlign = TextAlign.Center,
+    color: Color = Color.Black
+) {
+    val textStyleBodyMedium = MaterialTheme.typography.bodyMedium
+
+    var textStyle by remember { mutableStateOf(textStyleBodyMedium) }
+    var readyToDraw by remember { mutableStateOf(false) }
+
+    Text(
+        text = text,
+        style = textStyle,
+        softWrap = false,
+        modifier = modifier.drawWithContent {
+            if (readyToDraw) drawContent()
+        },
+        onTextLayout = { textLayoutResult ->
+            if (textLayoutResult.didOverflowWidth) {
+                textStyle = textStyle.copy(fontSize = textStyle.fontSize * 0.9)
+            } else {
+                readyToDraw = true
+            }
+        }
     )
 }
 
