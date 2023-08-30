@@ -20,10 +20,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Surface
-import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
@@ -34,7 +32,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +55,7 @@ import coil.compose.AsyncImage
 import com.blackbunny.boomerang.R
 import com.blackbunny.boomerang.data.TransactionStatus
 import com.blackbunny.boomerang.data.transaction.Transaction
+import com.blackbunny.boomerang.presentation.component.AutoSizedText
 import com.blackbunny.boomerang.presentation.screen.MainServiceStatus
 import com.blackbunny.boomerang.viewmodel.MyTransactionViewModel
 import java.text.SimpleDateFormat
@@ -75,7 +73,7 @@ fun MyTransactionScreen(
     if (userId.isNotBlank()) {
         LaunchedEffect(Unit) {
             viewModel.getTransactionRequestSent(userId)
-            viewModel.getTransactionRequestReceived(userId)
+            viewModel.getTransactionRequest(userId)
         }
     }
 
@@ -198,7 +196,7 @@ fun MyTransactionScreen(
                                     enabled = transaction.status != TransactionStatus.REQUESTED
                                 ) {
                                     Text(
-                                        text = "거레 완료",
+                                        text = "요청 수락",
                                         fontWeight = FontWeight.Medium
                                     )
                                 }

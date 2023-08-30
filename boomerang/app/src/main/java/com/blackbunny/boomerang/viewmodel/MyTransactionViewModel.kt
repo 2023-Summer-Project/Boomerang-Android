@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.blackbunny.boomerang.data.TransactionStatus
 import com.blackbunny.boomerang.data.transaction.Transaction
 import com.blackbunny.boomerang.data.transaction.TransactionRepository
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentChange
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -42,6 +41,11 @@ class MyTransactionViewModel @Inject constructor(
     }
 
     fun getTransactionRequestSent(userId: String) {
+        _uiState.update {
+            it.copy(
+                requestsSent = emptyList()
+            )
+        }
         viewModelScope.launch {
             transactionRepository.fetchTransactions(userId, "RENTEE")
                 .flowOn(Dispatchers.IO)
@@ -52,9 +56,23 @@ class MyTransactionViewModel @Inject constructor(
                         onSuccess = { transaction ->
                             // OnSucces
                             _uiState.update {
-                                it.copy(
-                                    requestsSent = it.requestsSent.notifyNewData(transaction.first)
-                                )
+                                when(transaction.second) {
+                                    DocumentChange.Type.ADDED -> {
+                                        it.copy(
+                                            requestsSent = _uiState.value.requestsSent.add(transaction.first)
+                                        )
+                                    }
+                                    DocumentChange.Type.MODIFIED -> {
+                                        it.copy(
+                                            requestsSent = _uiState.value.requestsSent.update(transaction.first)
+                                        )
+                                    }
+                                    DocumentChange.Type.REMOVED -> {
+                                        it.copy(
+                                            requestsSent = _uiState.value.requestsSent.remove(transaction.first)
+                                        )
+                                    }
+                                }
                             }
                         },
                         onFailure = {
@@ -67,7 +85,7 @@ class MyTransactionViewModel @Inject constructor(
         }
     }
 
-    fun getTransactionRequestReceived(userId: String) {
+    fun getTransactionRequest(userId: String) {
         _uiState.update {
             it.copy(
                 requestsReceived = emptyList()
