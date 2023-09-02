@@ -43,6 +43,19 @@ class UserRepository @Inject constructor(
     }
 
     /**
+     * postNewUser
+     * Register newly created user with successful email verification to Firebase Firestore collection "User"
+     */
+    suspend fun postNewUser(nickname: String): Result<Unit> {
+        val registrationResult = remoteSource.postNewUser(nickname)
+        return if (registrationResult) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception("Unable to register new user to Firestore database."))
+        }
+    }
+
+    /**
      * @return true: when given email is already taken, false: when given email is available.
      */
     fun emailExistenceCheck(email: String): Flow<Boolean> {
