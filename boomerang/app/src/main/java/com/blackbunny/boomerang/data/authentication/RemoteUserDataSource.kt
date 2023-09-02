@@ -128,6 +128,37 @@ class RemoteUserDataSource @Inject constructor() {
         awaitClose {  }
     }
 
+    suspend fun postNewUser(nickname: String) = suspendCoroutine { continuation ->
+        if (Firebase.auth.currentUser != null) {
+            val temp = hashMapOf(
+                "AREA" to emptyList<String>(),
+                "EMAIL" to Firebase.auth.currentUser!!.email,
+                "PROFILE_IMAGE" to "https://firebasestorage.googleapis.com/v0/b/ios-demo-ae41b.appspot.com/o/2023_summer_project.png?alt=media&token=692ddad2-7b3f-4b5d-b5aa-507a9d994d97",
+                "UID" to Firebase.auth.currentUser!!.uid,
+                "USERNAME" to nickname
+            )
+            // Register newly created user to Firebase Firestore collection called "User"
+            Firebase.firestore.collection("User").document(Firebase.auth.currentUser!!.uid)
+                .set(temp)
+                .addOnSuccessListener {
+                    Log.i(TAG, "Successfully register new user $temp")
+                    continuation.resume(true)
+                }
+                .addOnFailureListener {
+                    Log.w(TAG, "Unable to register new user.\n\tReason: ${it.printStackTrace()}")
+
+                    // Error exists on registration process. Clear out the registration infomration.
+                    removeUserFromDatabase()
+
+                    continuation.resume(false)
+                }
+        } else {
+            continuation.resume(false)
+        }
+
+    }
+
+
     fun fetchCurrentUser(): FirebaseUser? {
         return Firebase.auth.currentUser
     }
@@ -149,6 +180,8 @@ class RemoteUserDataSource @Inject constructor() {
 
                     continuation.resume(null)
                 }
+        } else {
+            continuation.resume(null)
         }
     }
 
