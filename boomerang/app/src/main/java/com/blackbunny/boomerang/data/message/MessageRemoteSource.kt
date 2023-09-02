@@ -78,7 +78,8 @@ class MessageRemoteSource @Inject constructor() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    TODO("Not yet implemented")
+                    Log.w(TAG, "Error on realtime database: ${error.message}")
+
                 }
 
             })
