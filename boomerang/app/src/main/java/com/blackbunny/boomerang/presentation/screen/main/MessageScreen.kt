@@ -147,7 +147,6 @@ fun MessageScreen(
                     Modifier
                         .fillMaxSize()
                         .background(Color.Transparent),
-//                    verticalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     items(uiState.chatList) {
                         ChatroomItem(
@@ -156,7 +155,6 @@ fun MessageScreen(
                                 viewModel.removeChatroom(it.id)
                             }
                         ) {
-//                            viewModel.clearUnreadMessages()
                             navController.navigate("${MainServiceStatus.CHAT_ROOM.name}/${it.id}/${it.title}") {
                                 popUpTo(navController.currentBackStackEntry!!.id) {
                                     inclusive = false
@@ -168,7 +166,6 @@ fun MessageScreen(
                         }
                         Divider(
                             color = MaterialTheme.colorScheme.outline,
-//                            modifier = Modifier.padding(top = 10.dp)
                         )
                     }
                 }

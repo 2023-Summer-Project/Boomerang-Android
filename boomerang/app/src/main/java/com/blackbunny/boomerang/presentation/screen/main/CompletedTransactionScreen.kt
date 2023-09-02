@@ -43,6 +43,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.blackbunny.boomerang.R
+import com.blackbunny.boomerang.data.TransactionStatus
+import com.blackbunny.boomerang.data.transaction.Transaction
 import com.blackbunny.boomerang.viewmodel.CompletedTransactionViewModel
 import com.blackbunny.boomerang.viewmodel.MyProductViewModel
 import java.text.SimpleDateFormat
@@ -87,7 +89,7 @@ fun CompletedTransactionScreen(
             }
 
             Text(
-                text = "완료된 거래",
+                text = stringResource(R.string.text_completed_transaction),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(5f)
@@ -96,11 +98,13 @@ fun CompletedTransactionScreen(
 
         if (uiState.completedTransactionList.isEmpty()) {
             Box(
-                Modifier.fillMaxSize().weight(1f)
+                Modifier
+                    .fillMaxSize()
+                    .weight(1f)
             ) {
                 Text(
                     modifier = Modifier.align(Alignment.Center),
-                    text = "완료된 거래가 없어요 :(",
+                    text = stringResource(R.string.text_no_completed_transaction),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Medium,
                     textAlign = TextAlign.Center,
@@ -109,10 +113,14 @@ fun CompletedTransactionScreen(
             }
         } else {
             Surface(
-                modifier = Modifier.fillMaxSize().weight(1f)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
             ) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
                 ){
                     items(uiState.completedTransactionList) {
                         TransactionListItem(it)
@@ -121,4 +129,76 @@ fun CompletedTransactionScreen(
             }
         }
     }
+}
+
+@Composable
+fun TransactionListItem(
+    transaction: Transaction = Transaction()
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(15.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        AsyncImage(
+            model = transaction.productImage,
+            contentDescription = null,
+            placeholder = painterResource(id = R.drawable._023_summer_project),
+            modifier = Modifier
+                .clip(RoundedCornerShape(15.dp))
+                .weight(1f)
+        )
+
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .weight(4f),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = transaction.productName,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black,
+                maxLines = 1,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = "${SimpleDateFormat(stringResource(R.string.day_format)).format(transaction.startDate)} 부터 ${SimpleDateFormat(stringResource(R.string.day_format)).format(transaction.endDate)} 까지",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Gray,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Text(
+                text = stringResource(transaction.status.text),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = when(transaction.status) {
+                    TransactionStatus.ACCEPTED -> {
+                        MaterialTheme.colorScheme.tertiary
+                    }
+                    TransactionStatus.REJECTED -> {
+                        MaterialTheme.colorScheme.error
+                    }
+                    TransactionStatus.COMPLETED -> {
+                        Color.Green
+                    }
+                    else -> {
+                        MaterialTheme.colorScheme.primary
+                    }
+                },
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+
+    Divider(Modifier.fillMaxWidth())
 }

@@ -90,7 +90,6 @@ fun ProfileServiceScreen(
 
     val uiState by viewModel.uiState.collectAsState()
     LaunchedEffect(Unit) {
-//        viewModel.fetchCurrentUser()
         viewModel.fetchSessionUser()
     }
 
@@ -247,7 +246,7 @@ fun ProfileServiceScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "완료한 거래",
+                        text = stringResource(R.string.text_completed_transaction),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Black,
@@ -265,7 +264,7 @@ fun ProfileServiceScreen(
                         .padding(start = 10.dp, end = 10.dp))
 
                 Text(
-                    text = "내 물건",
+                    text = stringResource(R.string.text_my_product),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Normal,
                     modifier = Modifier
@@ -287,7 +286,7 @@ fun ProfileServiceScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "내가 등록한 물건",
+                        text = stringResource(R.string.text_registered_product),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Black,
@@ -305,7 +304,7 @@ fun ProfileServiceScreen(
                         .padding(start = 10.dp, end = 10.dp))
 
                 Text(
-                    text = "앱 설정",
+                    text = stringResource(R.string.text_settings),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Normal,
                     modifier = Modifier
@@ -327,7 +326,7 @@ fun ProfileServiceScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "법적 공지",
+                        text = stringResource(R.string.text_legal_notice),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Gray,
@@ -349,7 +348,7 @@ fun ProfileServiceScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "오픈 소스 라이센스",
+                        text = stringResource(R.string.text_oss_license),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Gray,
@@ -373,7 +372,7 @@ fun ProfileServiceScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "로그아웃",
+                        text = stringResource(R.string.btn_sign_out),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Red,
@@ -392,7 +391,7 @@ fun ProfileServiceScreen(
         AnimatedAlertDialog(
             dialogVisibility = uiState.dialogVisibility,
             text = stringResource(id = uiState.signOutRequestStatus.text),
-            buttonText = "OK",
+            buttonText = stringResource(R.string.btn_text_confirm),
             iconImageSource = Icons.Filled.CheckCircle
         ) { // onclicked listener.
             when(uiState.signOutRequestStatus) {
@@ -438,7 +437,7 @@ fun ProfileServiceScreen(
                         .background(MaterialTheme.colorScheme.primaryContainer),
                 ) {
                     Text(
-                        text = "오픈소스 라이센스",
+                        text = stringResource(R.string.text_oss_license),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
                         textAlign = TextAlign.Center,

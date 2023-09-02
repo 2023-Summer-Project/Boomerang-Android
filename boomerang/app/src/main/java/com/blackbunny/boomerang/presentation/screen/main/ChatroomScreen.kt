@@ -93,12 +93,10 @@ fun ChatroomScreen(
                 restoreState = true
             }
         }
-//        navController.popBackStack(MainServiceStatus.MESSAGE.name, false)
     }
 
     if (chatId.isNotBlank()) {
         LaunchedEffect(Unit) {
-//            viewModel.requestMessages(chatId)
             viewModel.observeMessages(chatId)
         }
     }

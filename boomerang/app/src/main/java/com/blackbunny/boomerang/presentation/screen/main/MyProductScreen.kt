@@ -85,7 +85,7 @@ fun MyProductScreen(
             }
 
             Text(
-                text = "내 물건",
+                text = stringResource(R.string.text_my_product),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(5f)
@@ -133,7 +133,7 @@ fun MyProductScreen(
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Text(
-                                text = "물품 이름: ${it.productType} 물품 종류: ${it.productType}",
+                                text = "${stringResource(R.string.product_name)}: ${it.productName}",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color.Gray,

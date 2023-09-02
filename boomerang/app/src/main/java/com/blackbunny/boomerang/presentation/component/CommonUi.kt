@@ -276,20 +276,6 @@ fun TextFieldOutlined(
         enabled = enabled,)
 }
 
-/*
-OutlinedTextField(
-                    modifier = Modifier
-                        .weight(1f),
-                    value = uiState.value.locationText,
-                    onValueChange = {
-                        viewModel.updateLocationText(it)
-                    },
-                    label = { Text(stringResource(R.string.text_location)) },
-                    minLines = 1,
-                    maxLines = 1,
-                    enabled = uiState.value.interactionEnabled
-                )
- */
 
 /* Button */
 @Composable
@@ -303,11 +289,6 @@ fun ButtonSolid(
         modifier = modifier,
         enabled = enabled,
         onClick = { onClickListener() },
-//        elevation = ButtonDefaults.elevatedButtonElevation(
-//            defaultElevation = 10.dp,
-//            pressedElevation = 15.dp,
-//            disabledElevation = 0.dp
-//        )
     ) {
         Text(
             text = buttonText,
@@ -391,7 +372,6 @@ fun CircularProgressBar(
     ) {
         Row(
             modifier = modifier
-//                .padding(start = 10.dp, end = 10.dp)
                 .background(Color.Transparent),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -436,7 +416,7 @@ fun CircularProgressDialog(
     ) {
         CircularProgressBar(
             modifier = Modifier.padding(20.dp),
-            content = "Logging in...",
+            content = "Signing in...",
             process = process
         ) {
 
@@ -740,10 +720,6 @@ fun ProductDetailScreen(
                 )
             }
 
-
-            // Spacer
-//            Spacer(Modifier.height(5.dp))
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -884,7 +860,7 @@ fun ProductDetailScreen(
             )
 
             DividerText(
-                text = "거래 가능 시간",
+                text = stringResource(R.string.text_transaction_available_time),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16,
                 horizontalPadding = 5.dp
@@ -931,7 +907,7 @@ fun ProductDetailScreen(
             }
 
             DividerText(
-                text = "거래 희망 장소",
+                text = stringResource(R.string.text_transaction_prefer_location),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16,
                 horizontalPadding = 5.dp
@@ -942,12 +918,14 @@ fun ProductDetailScreen(
                     .padding(start = 5.dp, end = 5.dp))
 
             // Map (Naver Maps API)
+            val markerColor = MaterialTheme.colorScheme.primary
             val mapView = MapView(localContext).also { mapView ->
                 mapView.getMapAsync { naverMap ->
                     if (product.locationLatLng != null) {
                         Marker().apply {
                             this.position = product.locationLatLng
                             this.captionText = product.location
+
 
                             this.map = naverMap
                         }
@@ -1091,9 +1069,6 @@ fun ProductDetailScreen(
                 )
             }
 
-            // Spacer
-//            Spacer(Modifier.height(10.dp))
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1223,7 +1198,7 @@ fun ProductDetailScreen(
 
 
             DividerText(
-                text = "거래 가능 시간",
+                text = stringResource(R.string.text_transaction_available_time),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16,
                 horizontalPadding = 5.dp
@@ -1270,7 +1245,7 @@ fun ProductDetailScreen(
             }
 
             DividerText(
-                text = "거래 희망 장소",
+                text = stringResource(R.string.text_transaction_prefer_location),
                 fontWeight = FontWeight.Bold,
                 fontSize = 16,
                 horizontalPadding = 5.dp
@@ -1377,7 +1352,7 @@ fun ProductDetailScreen(
                         .clip(RoundedCornerShape(1.dp))
                         .padding(start = 10.dp)
                         .weight(3f),
-                    buttonText = "Rent this product."
+                    buttonText = stringResource(R.string.btn_rent_product)
                 ) {
                     showSheet = true
                 }
@@ -1400,7 +1375,7 @@ fun ProductDetailScreen(
                     sheetState = sheetState,
                 ) {
                     DatePickerWithLabel(
-                        labelText = "빌리는 날",
+                        labelText = stringResource(R.string.text_rent_start_day),
                         selectionLimit = currentDate
                     ) {
                         dateFrom = it
@@ -1410,7 +1385,7 @@ fun ProductDetailScreen(
                     Spacer(Modifier.height(20.dp))
 
                     DatePickerWithLabel(
-                        labelText = "반납하는 날",
+                        labelText = stringResource(R.string.text_rent_end_day),
                         selectionLimit = (dateFrom + 86400000L)
                     ) {
                         dateUntil = it
@@ -1426,7 +1401,7 @@ fun ProductDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
                         Text(
-                            text = "최종 금액",
+                            text = stringResource(R.string.text_total_cost),
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
@@ -1594,52 +1569,69 @@ fun MessageSent(
     var timeStampVisibility by remember { mutableStateOf(false) }
     val localCoroutineScope = rememberCoroutineScope()
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .background(Color.Transparent),
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
-            modifier = Modifier
-                .wrapContentSize()
-                .clickable(
-                    indication = null,
-                    interactionSource = MutableInteractionSource()
-                ) {
-                    localCoroutineScope.launch(Dispatchers.Default) {
-                        timeStampVisibility = !timeStampVisibility
-                        delay(1000L)
-                        timeStampVisibility = !timeStampVisibility
-                    }
-                },
-            shape = RoundedCornerShape(35.dp),
-            color = MaterialTheme.colorScheme.primaryContainer
-        ) {
-            Text(
-                text = message.message!!,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal,
-                modifier = Modifier
-                    .padding(10.dp)
-                    .background(Color.Transparent)
-            )
-        }
 
-        AnimatedVisibility(
-            visible = timeStampVisibility,
-            enter = slideInVertically() + fadeIn(),
-            exit = slideOutVertically() + fadeOut()
+        Spacer(
+            Modifier
+                .fillMaxWidth()
+                .weight(1f))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(4f)
+                .background(Color.Transparent),
+            horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = SimpleDateFormat(stringResource(R.string.daytime_format)).format(message.timestamp),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Light,
-                modifier = Modifier.padding(end = 10.dp)
-            )
+            Surface(
+                modifier = Modifier
+                    .wrapContentSize()
+                    .clickable(
+                        indication = null,
+                        interactionSource = MutableInteractionSource()
+                    ) {
+                        localCoroutineScope.launch(Dispatchers.Default) {
+                            timeStampVisibility = !timeStampVisibility
+                            delay(1000L)
+                            timeStampVisibility = !timeStampVisibility
+                        }
+                    },
+                shape = RoundedCornerShape(35.dp),
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Text(
+                    text = message.message!!,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .background(Color.Transparent)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = timeStampVisibility,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut()
+            ) {
+                Text(
+                    text = SimpleDateFormat(stringResource(R.string.daytime_format)).format(message.timestamp),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Light,
+                    modifier = Modifier.padding(end = 10.dp)
+                )
+            }
         }
     }
+
 }
 
 @Composable
@@ -1651,52 +1643,69 @@ fun MessageReceived(
     var timeStampVisibility by remember { mutableStateOf(false) }
     val localCoroutineScope = rememberCoroutineScope()
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
+            .wrapContentHeight()
             .background(Color.Transparent),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Center
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Surface(
+        Column(
             modifier = Modifier
-                .wrapContentSize()
-                .clickable(
-                    indication = null,
-                    interactionSource = MutableInteractionSource()
-                ) {
-                    localCoroutineScope.launch(Dispatchers.Default) {
-                        timeStampVisibility = !timeStampVisibility
-                        delay(1000L)
-                        timeStampVisibility = !timeStampVisibility
-                    }
-                },
-            shape = RoundedCornerShape(35.dp),
-            color = Color.LightGray
+                .fillMaxWidth()
+                .weight(4f)
+                .background(Color.Transparent),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = message.message!!,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal,
+            Surface(
                 modifier = Modifier
-                    .padding(10.dp)
-                    .background(Color.Transparent)
-            )
+                    .wrapContentSize()
+                    .clickable(
+                        indication = null,
+                        interactionSource = MutableInteractionSource()
+                    ) {
+                        localCoroutineScope.launch(Dispatchers.Default) {
+                            timeStampVisibility = !timeStampVisibility
+                            delay(1000L)
+                            timeStampVisibility = !timeStampVisibility
+                        }
+                    },
+                shape = RoundedCornerShape(35.dp),
+                color = Color.LightGray
+            ) {
+                Text(
+                    text = message.message!!,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Normal,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .background(Color.Transparent)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = timeStampVisibility,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut()
+            ) {
+                Text(
+                    text = SimpleDateFormat(stringResource(R.string.daytime_format)).format(message.timestamp),
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Light,
+                    modifier = Modifier.padding(start = 10.dp)
+                )
+            }
         }
 
-        AnimatedVisibility(
-            visible = timeStampVisibility,
-            enter = slideInVertically() + fadeIn(),
-            exit = slideOutVertically() + fadeOut()
-        ) {
-            Text(
-                text = SimpleDateFormat(stringResource(R.string.daytime_format)).format(message.timestamp),
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Light,
-                modifier = Modifier.padding(start = 10.dp)
-            )
-        }
+        Spacer(
+            Modifier
+                .fillMaxWidth()
+                .weight(1f))
     }
+
+
 }
 
 /* Time Picker */

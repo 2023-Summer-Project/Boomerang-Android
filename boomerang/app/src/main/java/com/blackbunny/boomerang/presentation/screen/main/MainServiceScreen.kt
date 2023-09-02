@@ -76,7 +76,6 @@ fun MainServiceScreen(
     onBottomBarVisibilityChangeRequested: (Boolean) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val localCoroutineScope = rememberCoroutineScope()
 
     // Pull-to-Refresh Reference: https://stackoverflow.com/questions/72919552/how-to-implement-swipe-to-refresh-in-jetpack-compose
     val refreshState = rememberPullRefreshState(uiState.isRefreshing, { viewModel.requestRefresh() })
@@ -88,10 +87,6 @@ fun MainServiceScreen(
         viewModel.updateDetailViewVisibility(false)
     }
 
-    /**
-     * Current problem. This LaunchedEffect is not being triggered, even though its conditions are qualified.
-     * TODO:
-     */
     if (uiState.requestedChatroom.isNotBlank()) {
         if (!uiState.temporaryChatroomVisibility) {
             // Navigate to Chatroom Destination.

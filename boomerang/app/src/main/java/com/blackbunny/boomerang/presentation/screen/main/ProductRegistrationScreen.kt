@@ -431,7 +431,7 @@ fun ProductRegistration(
                     }
                 ) {
                     Text(
-                        text = "위치 선택하기",
+                        text = stringResource(R.string.text_select_location),
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
                         modifier = Modifier.padding(15.dp)
@@ -451,8 +451,8 @@ fun ProductRegistration(
             exit = fadeOut() + scaleOut()
         ) {
             CircularProgressDialog(
-                titleText = "Upload new product",
-                contentText = "Your product is being uploaded."
+                titleText = stringResource(R.string.text_upload_product),
+                contentText = stringResource(R.string.text_support_upload_product)
             ) {
                 
             }
@@ -460,8 +460,8 @@ fun ProductRegistration(
 
         // Upload Completion Alert
         AnimatedAlertDialog(
-            text = "New product has heen uploaded successfully.",
-            buttonText = "OK",
+            text = stringResource(R.string.text_successful_product_upload),
+            buttonText = stringResource(R.string.btn_text_confirm),
             iconImageSource = Icons.Filled.CheckCircle,
             dialogVisibility = uiState.value.alertDialogVisibility
         ) {

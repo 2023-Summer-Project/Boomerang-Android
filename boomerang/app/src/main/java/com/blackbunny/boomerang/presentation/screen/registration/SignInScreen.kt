@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.blackbunny.boomerang.R
 import com.blackbunny.boomerang.data.EmailValidation
 import com.blackbunny.boomerang.data.MainAppStatus
 import com.blackbunny.boomerang.data.SignInUiState
@@ -170,7 +171,7 @@ fun SignInForm(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            TitleText("Sign In")
+            TitleText(stringResource(R.string.text_sign_in))
 
             // Spacer
             Spacer(Modifier.height(80.dp))
@@ -195,7 +196,7 @@ fun SignInForm(
 
             SensitiveTextField(
                 enabled = !uiState.dialogVisibility,
-                title = "Password",
+                title = stringResource(R.string.text_password),
                 value = uiState.inputPassword,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Password),
@@ -204,7 +205,6 @@ fun SignInForm(
                     .fillMaxWidth()
                     .padding(start = 50.dp, end = 50.dp)
             ) {
-//                userInputPassword.value = it
                 onPasswordValueChanged(it)
             }
 
@@ -219,13 +219,13 @@ fun SignInForm(
             ) {
                 ButtonOutlined(
                     enabled = !uiState.dialogVisibility,
-                    buttonText = "Cancel"
+                    buttonText = stringResource(R.string.btn_text_cancel)
                 ) {
                     onCancelButtonClicked()
                 }
                 ButtonSolid(
                     enabled = !uiState.dialogVisibility,
-                    buttonText = "Sign In"
+                    buttonText = stringResource(R.string.text_sign_in)
                 ) {
                     onSignInButtonClicked(
                         uiState.inputEmail.text,

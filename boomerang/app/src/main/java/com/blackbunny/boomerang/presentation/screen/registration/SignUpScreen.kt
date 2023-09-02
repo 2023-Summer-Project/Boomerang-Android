@@ -41,6 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.blackbunny.boomerang.R
 import com.blackbunny.boomerang.data.EmailVerification
 import com.blackbunny.boomerang.data.MainAppStatus
 import com.blackbunny.boomerang.data.PasswordValidation
@@ -68,18 +69,16 @@ fun SignUpScreen(
 ) {
     // Local Coroutine Scope
     val localCoroutineScope = rememberCoroutineScope()
-//    val dialogVisibility = remember { mutableStateOf(false) }
 
     val uiState by viewModel.uiState.collectAsState()
 
     // Handle Navigation
     if (uiState.isEmailVerified == EmailVerification.VERIFIED) {
+        // Request user creation.
+        viewModel.registerNewUser(uiState.userInputNickname.text)
         LaunchedEffect(Unit) {
-            navController.navigate(MainServiceStatus.MAIN.name) {
+            navController.navigate(MainAppStatus.INITIAL.name) {
                 // Clear out current backstack entry before moving on to different NavGraph
-                Log.d("NAVIGATOR", "Start Destination: ${navController.graph.findStartDestination()}")
-                Log.d("NAVIGATOR", "Start Destination: ${navController.currentBackStack.value.toString()}")
-
                 popUpTo(navController.graph.id) {
                     inclusive = true
                     saveState = true
@@ -98,7 +97,7 @@ fun SignUpScreen(
             onCancelButtonClicked = {
                 viewModel.cancelCurrentJob()
                 navController.popBackStack(MainAppStatus.INITIAL.name, false) },
-            onSignUpButtonClicked = { email, password ->
+            onSignUpButtonClicked = { email, password, nickname ->
                 // SignUp request.
                 localCoroutineScope.launch {
                     val signUpResult = viewModel.createNewUser(email, password)
@@ -119,11 +118,11 @@ fun SignUpScreen(
             exit = scaleOut() + fadeOut()
         ) {
             CircularProgressDialog(
-                titleText = "Email Verification",
-                contentText = "Please check your mailbox"
+                titleText = stringResource(R.string.text_email_verification),
+                contentText = stringResource(R.string.info_email_verification)
             ) {
                 ButtonOutlined(
-                    buttonText = "Cancel"
+                    buttonText = stringResource(R.string.btn_text_cancel)
                 ) {
                     viewModel.cancelCurrentJob()
                 }
@@ -138,12 +137,10 @@ fun SignUpForm(
     modifier: Modifier = Modifier,
     uiState: SignUpUiState,
     onCancelButtonClicked: () -> Unit,
-    onSignUpButtonClicked: (String, String) -> Unit
+    onSignUpButtonClicked: (String, String, String) -> Unit
 ) {
     // Local Focus Manager
     val localFocusManager = LocalFocusManager.current
-    // Local CoroutineScope
-    val localCoroutineScope = rememberCoroutineScope()
     // Local Context
     val localContext = LocalContext.current
 
@@ -153,7 +150,7 @@ fun SignUpForm(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         TitleText(
-            text = "Sign Up"
+            text = stringResource(R.string.text_sign_up)
         )
 
         Spacer(Modifier.height(50.dp))
@@ -167,7 +164,7 @@ fun SignUpForm(
         ) {
             NonSensitiveTextField(
                 enabled = !uiState.dialogVisibility,
-                title = "Email",
+                title = stringResource(R.string.text_email),
                 supportingText = stringResource(uiState.emailValidationState.text),
                 value = uiState.userInputEmail,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Email),
@@ -179,12 +176,28 @@ fun SignUpForm(
                 viewModel.setEmailInput(it)
             }
 
+            Spacer(Modifier.height(15.dp))
+
+            NonSensitiveTextField(
+                enabled = !uiState.dialogVisibility,
+                title = stringResource(R.string.text_nickname),
+                supportingText = stringResource(R.string.supporting_text_nickname),
+                value = uiState.userInputNickname,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Email),
+                keyboardActions = KeyboardActions(onDone = { localFocusManager.clearFocus() }),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 50.dp, end = 50.dp)
+            ) {
+                viewModel.setNicknameInput(it)
+            }
+
             // Spacer
             Spacer(Modifier.height(15.dp))
 
             SensitiveTextField(
                 enabled = !uiState.dialogVisibility,
-                title = "Password",
+                title = stringResource(R.string.text_password),
                 value = uiState.userInputPassword,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Password),
@@ -205,7 +218,7 @@ fun SignUpForm(
             ) {
                 SensitiveTextField(
                     enabled = !uiState.dialogVisibility,
-                    title = "Password Confirm",
+                    title = stringResource(R.string.text_password_confirm),
                     value = uiState.userInputPasswordConfirm,
                     supportingText = stringResource(uiState.passwordConfirmState.text),
                     visualTransformation = PasswordVisualTransformation(),
@@ -215,7 +228,6 @@ fun SignUpForm(
                         .fillMaxWidth()
                         .padding(start = 50.dp, end = 50.dp)
                 ) {
-//                    userInputPasswordConfirm.value = it
                     viewModel.setPasswordConfirmationInput(it)
                 }
             }
@@ -230,28 +242,28 @@ fun SignUpForm(
                     .fillMaxWidth()
             ) {
                 ButtonOutlined(
-//                    enabled = !uiState.dialogVisibility,
                     enabled = !uiState.dialogVisibility,
-                    buttonText = "Cancel"
+                    buttonText = stringResource(R.string.btn_text_cancel)
                 ) {
                     onCancelButtonClicked()
                 }
                 ButtonSolid(
                     enabled = !uiState.dialogVisibility,
-                    buttonText = "Sign In"
+                    buttonText = stringResource(R.string.text_sign_up)
                 ) {
                     localFocusManager.clearFocus()      // Clear focus
                     when(uiState.passwordConfirmState) {
                         PasswordValidation.VALID -> {
                             onSignUpButtonClicked(
                                 uiState.userInputEmail.text,
-                                uiState.userInputPassword.text
+                                uiState.userInputPassword.text,
+                                uiState.userInputNickname.text
                             )
                         }
                         else -> {
                             Toast.makeText(
                                 localContext,
-                                "Password should be confirmed.",
+                                localContext.getText(R.string.password_not_confirmed),
                                 Toast.LENGTH_LONG
                             ).show()
                         }

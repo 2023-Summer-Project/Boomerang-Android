@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.blackbunny.boomerang.R
 import com.blackbunny.boomerang.presentation.component.ButtonOutlined
 import com.blackbunny.boomerang.presentation.component.ButtonSolid
 import com.blackbunny.boomerang.presentation.component.TitleText
@@ -34,13 +36,13 @@ fun StartScreen(
         verticalArrangement = Arrangement.Center
     ) {
         TitleText(
-            text = "Welcome",
+            text = stringResource(R.string.text_greeting),
             modifier = Modifier
                 .padding(35.dp)
                 .fillMaxWidth()
         )
         ButtonSolid(
-            buttonText = "Sign In",
+            buttonText = stringResource(R.string.text_sign_in),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
@@ -50,7 +52,7 @@ fun StartScreen(
         }
 
         ButtonOutlined(
-            buttonText = "Sign Up",
+            buttonText = stringResource(R.string.btn_sign_out),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
