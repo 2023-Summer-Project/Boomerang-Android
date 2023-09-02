@@ -85,36 +85,6 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private suspend fun searchProductByKeywordContinuous() {
-        _uiState.update {
-            it.copy(
-                searchResult = emptyList()
-            )
-        }
-        productRepository.searchProductByKeyword(_uiState.value.searchKeyword.text)
-            .cancellable()
-            .flowOn(Dispatchers.IO)
-            .map { Result.success(it) }
-            .catch { emit(Result.failure(it)) }
-            .collectLatest { searchResult ->
-                searchResult.fold(
-                    onSuccess = { product ->
-                        Log.i(TAG, "Successfully received data. $product")
-                        // Update UI State.
-                        _uiState.update {
-                            it.copy(
-                                searchResult = it.searchResult.notifyChanged(product)
-                            )
-                        }
-                    },
-                    onFailure = {
-                        Log.d(TAG, "Unable to received data.")
-                        it.printStackTrace()
-                    }
-                )
-            }
-    }
-
     private fun List<Product>.notifyChanged(newData: Product): List<Product> {
         return List<Product>(this.size + 1) {
             if (it < this.size) this[it]
