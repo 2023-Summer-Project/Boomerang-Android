@@ -46,6 +46,14 @@ class SignUpViewModel @Inject constructor(
         emailValidation()
     }
 
+    fun setNicknameInput(input: TextFieldValue) {
+        _uiState.update {
+            it.copy(
+                userInputNickname = input
+            )
+        }
+    }
+
     fun setPasswordInput(input: TextFieldValue) {
         _uiState.update {
             it.copy(
@@ -152,6 +160,26 @@ class SignUpViewModel @Inject constructor(
                         }
                     )
                 }
+        }
+    }
+
+    /**
+     * registerNewUser
+     * Register new user with successful email verification to Firebase Firestore.
+     */
+    fun registerNewUser(nickname: String) {
+        viewModelScope.launch {
+            userRepository.postNewUser(nickname)
+                .fold(
+                    onSuccess = {
+                        Log.i(TAG, "User has been successfully added to Firestore database.")
+                        /* Do nothing. */
+                    },
+                    onFailure = {
+                        Log.w(TAG, "Unable to add new user to Firestore database.")
+                        it.printStackTrace()
+                    }
+                )
         }
     }
 
