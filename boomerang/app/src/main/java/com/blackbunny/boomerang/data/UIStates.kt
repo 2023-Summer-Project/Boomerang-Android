@@ -41,6 +41,7 @@ data class SignInUiState(
 data class SignUpUiState(
     // User Input Credentials
     val userInputEmail: TextFieldValue = TextFieldValue(),
+    val userInputNickname: TextFieldValue = TextFieldValue(),
     val userInputPassword: TextFieldValue = TextFieldValue(),
     // For password confirmation
     val userInputPasswordConfirm: TextFieldValue = TextFieldValue(),
