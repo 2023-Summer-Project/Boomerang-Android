@@ -185,11 +185,12 @@ class RemoteProductDataSource @Inject constructor() {
 
     fun searchProductByKeyword(keyword: String) = callbackFlow {
         ref.collection("Product")
+            .orderBy("POST_TITLE")
             .whereGreaterThanOrEqualTo("POST_TITLE", keyword)
             // "\uf8ff" is at an extremely high boundary, therefore, any unicode character with this keyword would greater than any other
             // unicode based text.
             .whereLessThanOrEqualTo("POST_TITLE", keyword + "\uf8ff")
-            .get(Source.DEFAULT)
+            .get(Source.CACHE)
             .addOnSuccessListener {
                 // Successfully received data.
                 for (document in it.documents) {
