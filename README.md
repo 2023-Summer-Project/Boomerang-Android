@@ -1,5 +1,5 @@
 ![boomerang_banner](https://github.com/2023-Summer-Project/Boomerang-Android/assets/61890844/b4425d15-adb4-465e-88f8-5641fd97077b)
-# Boomerang for Android [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/2023-Summer-Project/Boomerang-Android) [![ko](https://img.shields.io/badge/lang-ko-blue.svg)](https://github.com/2023-Summer-Project/Boomerang-Android)
+# Boomerang for Android [![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/2023-Summer-Project/Boomerang-Android/blob/main/README.md) [![ko](https://img.shields.io/badge/lang-ko-blue.svg)](https://github.com/2023-Summer-Project/Boomerang-Android/blob/main/README-ko.md)
 <div align="center">
   <img src="https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=Android&logoColor=white">
   <img src="https://img.shields.io/badge/Jetpack Compose-4285F4?style=for-the-badge&logo=Jetpack Compose&logoColor=white">
