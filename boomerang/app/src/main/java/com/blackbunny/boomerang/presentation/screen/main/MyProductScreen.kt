@@ -152,11 +152,15 @@ fun MyProductScreen(
                             )
                         }
 
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = null,
-                            modifier = Modifier.weight(1f)
-                        )
+                        IconButton(
+                            onClick = { viewModel.removeProduct(it) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = null,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
 
                     Divider(Modifier.fillMaxWidth())

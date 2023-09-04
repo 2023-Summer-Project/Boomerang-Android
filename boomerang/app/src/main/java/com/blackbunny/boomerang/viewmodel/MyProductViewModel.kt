@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -21,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MyProductViewModel @Inject constructor(
-    private val fetchProductUseCase: FetchProductForCardUseCase
+    private val fetchProductUseCase: FetchProductForCardUseCase,
+    private val productRepository: ProductRepository
 ) : ViewModel() {
 
     private val TAG = "MyProductViewModel"
@@ -60,10 +60,36 @@ class MyProductViewModel @Inject constructor(
         }
     }
 
+    // Remove product.
+    fun removeProduct(product: Product) {
+        viewModelScope.launch {
+            val result = productRepository.removeProduct(product)
+            if (result) {
+                Log.d(TAG, "Successfully remove product from the database.")
+                // Remove data from the list.
+                _uiState.update {
+                    it.copy(
+                        productList = it.productList.remove(product)
+                    )
+                }
+            } else {
+                Log.w(TAG, "Unable to remove product from the database.")
+            }
+        }
+    }
+
     private fun <T> List<T>.add(newData: T): List<T> {
         return List<T>(this.size + 1) {
             if (it < this.size) this[it]
             else newData
+        }
+    }
+
+    private fun <T> List<T>.remove(data: T): List<T> {
+        val temp = this.toMutableList()
+        return temp.apply {
+            this.remove(data)
+            this.toList()
         }
     }
 

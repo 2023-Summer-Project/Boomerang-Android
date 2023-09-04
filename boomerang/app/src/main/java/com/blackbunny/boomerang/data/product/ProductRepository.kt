@@ -41,6 +41,13 @@ class ProductRepository @Inject constructor(
         return remoteSource.postNewProduct(newProduct)
     }
 
+    /**
+     * RemoveProduct
+     */
+    suspend fun removeProduct(product: Product): Boolean {
+        return remoteSource.removeProduct(product)
+    }
+
     suspend fun fetchImageUri(filename: String): Result<Uri> {
         val uri = remoteSource.getImageUrlAsync(filename)
         if (uri == null) {

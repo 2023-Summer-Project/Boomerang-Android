@@ -141,10 +141,16 @@ class RemoteProductDataSource @Inject constructor() {
             }
     }
 
-    // Implement Promise-like pattern.
+    /**
+     * uploadNewImage
+     * Upload new image to Firebase Storage
+     * @return Pair of Filename without extension and Result.
+     */
     suspend fun uploadNewImage(file: File): Pair<String, String>? = suspendCoroutine { continuation ->
         // Storage Reference.
         var uri  = Uri.fromFile(file)
+
+        // TODO: Talk to iOS side, and should match up the name format of the image file to be uploaded.
         val storageRef = imageStorage.child("${uri.lastPathSegment}")
 
         val uploadTask = storageRef.putFile(uri, storageMetadata {
@@ -178,11 +184,44 @@ class RemoteProductDataSource @Inject constructor() {
     }
 
     /**
+     * RemoveProduct Function
+     * Remove product from Firestore database & corresponding images from Firebase Storage
+     */
+    suspend fun removeProduct(product: Product) = suspendCoroutine { continuation ->
+        ref.collection("Product").document(product.productId)
+            .delete()
+            .addOnSuccessListener {
+                // Successfully remove selected product from the Firestore database.
+                try {
+                    for (image in product.images) {
+                        imageStorage.child("${image.key}.jpg")
+                            .delete()
+                            .addOnSuccessListener {
+                                Log.d(TAG, "Successfully remove corresponding image from the Storage")
+                            }
+                            .addOnFailureListener {
+                                Log.w(TAG, "Unable to remove corresponding image from the Storage")
+                                throw it
+                            }
+                    }
+
+                    // Successfully remove all corresponding images from the storage.
+                    continuation.resume(true)
+                } catch (e: Exception) {
+                    continuation.resume(false)
+                }
+            }
+            .addOnFailureListener {
+                Log.w(TAG, "Unable to remove product from the Firestore database.\n\tReason: ${it.printStackTrace()}")
+                continuation.resume(false)
+            }
+    }
+
+    /**
      * searchProduct Function
      * @limit: Currently only targeted to name of the post.
      * TODO: Find alternative way to support advanced search feature.
      */
-
     fun searchProductByKeyword(keyword: String) = callbackFlow {
         ref.collection("Product")
             .orderBy("POST_TITLE")
