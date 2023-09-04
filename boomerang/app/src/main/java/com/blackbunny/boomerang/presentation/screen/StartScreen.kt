@@ -52,7 +52,7 @@ fun StartScreen(
         }
 
         ButtonOutlined(
-            buttonText = stringResource(R.string.btn_sign_out),
+            buttonText = stringResource(R.string.text_sign_up),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
